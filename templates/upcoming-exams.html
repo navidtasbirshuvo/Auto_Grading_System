@@ -1,0 +1,224 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GradeMentor AI - Upcoming Exams</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="{% static 'css/dashboard.css' %}" rel="stylesheet"/>
+</head>
+<body class="d-flex">
+<aside class="sidebar p-3">
+<a class="text-white fs-4 fw-semibold px-3 d-flex align-items-center text-decoration-none" href="{% url 'index' %}">
+<span class="material-icons text-purple-400 me-2" style="font-size: 2rem;">school</span>
+<span>GradeMentor AI</span>
+</a>
+<nav class="mt-4">
+<a class="nav-item" href="{% url 'student-dashboard' %}">
+<span class="material-icons">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="nav-item active" href="{% url 'upcoming-exams' %}">
+<span class="material-icons">assignment</span>
+<span>Upcoming Exams</span>
+</a>
+<a class="nav-item" href="{% url 'current-exams' %}">
+<span class="material-icons">pending_actions</span>
+<span>Current Exams</span>
+</a>
+<a class="nav-item" href="{% url 'past-exams' %}">
+<span class="material-icons">history</span>
+<span>Past Exams</span>
+</a>
+<a class="nav-item" href="{% url 'student-results' %}">
+<span class="material-icons">assessment</span>
+<span>Results</span>
+</a>
+<a class="nav-item" href="{% url 'student-profile' %}">
+<span class="material-icons">person</span>
+<span>Profile</span>
+</a>
+</nav>
+</aside>
+<div class="flex-fill d-flex flex-column main-wrapper">
+<header class="header shadow-sm py-3 px-4 d-flex justify-content-between align-items-center">
+<div class="d-flex align-items-center">
+<button class="btn btn-link text-gray-400 p-0 border-0 d-md-none" id="mobile-menu-btn">
+<span class="material-icons">menu</span>
+</button>
+<h1 class="fs-5 fw-semibold text-gray-100 ms-2 ms-md-0 mb-0">Upcoming Exams</h1>
+</div>
+<div class="d-flex align-items-center">
+<button class="btn btn-link text-gray-400 p-2 border-0 me-2">
+<span class="material-icons">notifications</span>
+</button>
+<div class="dropdown">
+<button aria-haspopup="true" aria-label="User menu" class="btn btn-link p-0 border-0 rounded-circle" id="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
+<img alt="User avatar" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_QhHs6CWZb3XWhpFDsCWkLp7tBxM8KE4nP__BDOhBj3MQm93o5ab1yNm-N295nbteyMMUqoYTtudn5_3TDLU2Q6wPA94ub9wUFYT-M-J0EqIssGUQNhndSH33ZtKv4Vq_fQFvfRA-O6FykV6Sepd0JIRopBz3cQx508kQ1KCoeunXwTLFebnxa6U2aCZLbyIzidYtF9AEwM-gzgwkUaNURoc1ulAX2g_sFsmdQVc4xOnQb5mw9OxBZIr4fnuqs0u5s3-QMUw"/>
+</button>
+<ul class="dropdown-menu dropdown-menu-end bg-gray-700 border-0 shadow-lg" aria-labelledby="user-menu">
+<li><a class="dropdown-item text-gray-200 d-flex align-items-center" href="{% url 'student-profile' %}" style="background: none;">
+<span class="material-icons me-2" style="font-size: 1rem;">person</span>Profile
+</a></li>
+<li><a class="dropdown-item text-gray-200 d-flex align-items-center" href="#" style="background: none;">
+<span class="material-icons me-2" style="font-size: 1rem;">settings</span>Settings
+</a></li>
+<li><a class="dropdown-item text-gray-200 d-flex align-items-center" href="{% url 'login' %}" style="background: none;">
+<span class="material-icons me-2" style="font-size: 1rem;">logout</span>Sign out
+</a></li>
+</ul>
+</div>
+</div>
+</header>
+<main class="flex-fill overflow-auto main-content p-4">
+<div class="container-fluid">
+<div class="mb-4">
+<h2 class="fs-2 fw-semibold text-gray-100">Upcoming Exams</h2>
+<p class="text-gray-400">View and manage your scheduled exams. Click on any exam to see details or start taking it.</p>
+</div>
+
+<!-- Filter and Search -->
+<div class="row mb-4">
+<div class="col-md-6">
+<div class="input-group">
+<span class="input-group-text bg-gray-700 border-gray-700 text-gray-400">
+<span class="material-icons" style="font-size: 1.2rem;">search</span>
+</span>
+<input type="text" class="form-control bg-gray-700 border-gray-700 text-gray-100" placeholder="Search exams..." style="border-left: none;">
+</div>
+</div>
+<div class="col-md-3">
+<select class="form-select bg-gray-700 border-gray-700 text-gray-100">
+<option>All Subjects</option>
+<option>Computer Science</option>
+<option>Mathematics</option>
+<option>Physics</option>
+<option>Chemistry</option>
+</select>
+</div>
+<div class="col-md-3">
+<select class="form-select bg-gray-700 border-gray-700 text-gray-100">
+<option>All Status</option>
+<option>Available</option>
+<option>Scheduled</option>
+<option>Pending</option>
+</select>
+</div>
+</div>
+
+<!-- Exam Cards -->
+<div class="row g-4">
+<div class="col-12 col-md-6 col-lg-4">
+<div class="card custom-card h-100">
+<div class="card-body p-4">
+<div class="d-flex justify-content-between align-items-start mb-3">
+<h5 class="card-title text-gray-100 mb-0">Advanced Algorithms</h5>
+<span class="badge bg-success">Available</span>
+</div>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">subject</span>Computer Science</p>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">schedule</span>90 minutes</p>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">event</span>July 15, 2024 - 2:00 PM</p>
+<p class="text-gray-400 mb-3"><span class="material-icons me-1" style="font-size: 1rem;">quiz</span>25 questions</p>
+<div class="d-grid gap-2">
+<a href="{% url 'exam-detail' %}" class="btn btn-custom-primary">
+<span class="material-icons me-2" style="font-size: 1rem;">play_arrow</span>Start Exam
+</a>
+<a href="{% url 'exam-detail' %}" class="btn btn-custom-secondary">View Details</a>
+</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4">
+<div class="card custom-card h-100">
+<div class="card-body p-4">
+<div class="d-flex justify-content-between align-items-start mb-3">
+<h5 class="card-title text-gray-100 mb-0">Organic Chemistry II</h5>
+<span class="badge bg-info">Scheduled</span>
+</div>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">subject</span>Chemistry</p>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">schedule</span>120 minutes</p>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">event</span>July 18, 2024 - 10:00 AM</p>
+<p class="text-gray-400 mb-3"><span class="material-icons me-1" style="font-size: 1rem;">quiz</span>30 questions</p>
+<div class="d-grid gap-2">
+<button class="btn btn-custom-secondary" disabled>
+<span class="material-icons me-2" style="font-size: 1rem;">schedule</span>Scheduled
+</button>
+<a href="{% url 'exam-detail' %}" class="btn btn-custom-secondary">View Details</a>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col-12 col-md-6 col-lg-4">
+<div class="card custom-card h-100">
+<div class="card-body p-4">
+<div class="d-flex justify-content-between align-items-start mb-3">
+<h5 class="card-title text-gray-100 mb-0">Linear Algebra Quiz</h5>
+<span class="badge bg-warning text-dark">Due Soon</span>
+</div>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">subject</span>Mathematics</p>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">schedule</span>45 minutes</p>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">event</span>July 16, 2024 - 3:00 PM</p>
+<p class="text-gray-400 mb-3"><span class="material-icons me-1" style="font-size: 1rem;">quiz</span>15 questions</p>
+<div class="d-grid gap-2">
+<a href="{% url 'exam-detail' %}" class="btn btn-custom-primary">
+<span class="material-icons me-2" style="font-size: 1rem;">play_arrow</span>Start Exam
+</a>
+<a href="{% url 'exam-detail' %}" class="btn btn-custom-secondary">View Details</a>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col-12 col-md-6 col-lg-4">
+<div class="card custom-card h-100">
+<div class="card-body p-4">
+<div class="d-flex justify-content-between align-items-start mb-3">
+<h5 class="card-title text-gray-100 mb-0">Physics Final</h5>
+<span class="badge bg-secondary">Upcoming</span>
+</div>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">subject</span>Physics</p>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">schedule</span>180 minutes</p>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">event</span>July 25, 2024 - 9:00 AM</p>
+<p class="text-gray-400 mb-3"><span class="material-icons me-1" style="font-size: 1rem;">quiz</span>40 questions</p>
+<div class="d-grid gap-2">
+<button class="btn btn-custom-secondary" disabled>
+<span class="material-icons me-2" style="font-size: 1rem;">lock</span>Not Available
+</button>
+<a href="{% url 'exam-detail' %}" class="btn btn-custom-secondary">View Details</a>
+</div>
+</div>
+</div>
+</div>
+
+<div class="col-12 col-md-6 col-lg-4">
+<div class="card custom-card h-100">
+<div class="card-body p-4">
+<div class="d-flex justify-content-between align-items-start mb-3">
+<h5 class="card-title text-gray-100 mb-0">Data Structures</h5>
+<span class="badge bg-success">Available</span>
+</div>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">subject</span>Computer Science</p>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">schedule</span>75 minutes</p>
+<p class="text-gray-400 mb-2"><span class="material-icons me-1" style="font-size: 1rem;">event</span>July 20, 2024 - 1:00 PM</p>
+<p class="text-gray-400 mb-3"><span class="material-icons me-1" style="font-size: 1rem;">quiz</span>20 questions</p>
+<div class="d-grid gap-2">
+<a href="{% url 'exam-detail' %}" class="btn btn-custom-primary">
+<span class="material-icons me-2" style="font-size: 1rem;">play_arrow</span>Start Exam
+</a>
+<a href="{% url 'exam-detail' %}" class="btn btn-custom-secondary">View Details</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/student.js' %}"></script>
+</body>
+</html>
