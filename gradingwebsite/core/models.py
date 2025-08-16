@@ -19,7 +19,6 @@ class Subject(models.Model):
         ordering = ['code']
 
 class Exam(models.Model):
-    """Main Exam model"""
     EXAM_STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('scheduled', 'Scheduled'),
@@ -33,22 +32,15 @@ class Exam(models.Model):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='exams')
     teacher = models.ForeignKey(TeacherProfile, on_delete=models.CASCADE, related_name='created_exams')
 
-    # Timing
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     duration_minutes = models.PositiveIntegerField(help_text="Duration in minutes")
-
-    # Settings
     total_marks = models.PositiveIntegerField(default=0)
     passing_marks = models.PositiveIntegerField(default=0)
     max_attempts = models.PositiveIntegerField(default=1)
     shuffle_questions = models.BooleanField(default=False)
     show_results_immediately = models.BooleanField(default=True)
-
-    # Status
     status = models.CharField(max_length=20, choices=EXAM_STATUS_CHOICES, default='draft')
-
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -72,7 +64,6 @@ class Exam(models.Model):
         return self.questions.count()
 
     def calculate_total_marks(self):
-        """Calculate and update total marks based on questions"""
         total = sum(question.marks for question in self.questions.all())
         self.total_marks = total
         self.save()
@@ -88,7 +79,6 @@ class Exam(models.Model):
         ordering = ['-created_at']
 
 class Question(models.Model):
-    """Question model for exams"""
     QUESTION_TYPES = [
         ('mcq', 'Multiple Choice'),
         ('true_false', 'True/False'),
@@ -120,7 +110,6 @@ class Question(models.Model):
         unique_together = ['exam', 'order']
 
 class QuestionOption(models.Model):
-    """Options for multiple choice questions"""
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
     option_text = models.CharField(max_length=500)
     is_correct = models.BooleanField(default=False)
@@ -134,7 +123,6 @@ class QuestionOption(models.Model):
         unique_together = ['question', 'order']
 
 class ExamAttempt(models.Model):
-    """Student's attempt at an exam"""
     ATTEMPT_STATUS_CHOICES = [
         ('in_progress', 'In Progress'),
         ('submitted', 'Submitted'),
@@ -192,17 +180,12 @@ class Answer(models.Model):
     attempt = models.ForeignKey(ExamAttempt, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
 
-    # Different answer types
-    selected_option = models.ForeignKey(QuestionOption, on_delete=models.CASCADE, null=True, blank=True)  # For MCQ
-    text_answer = models.TextField(blank=True)  # For short answer, essay, fill in blank
-    boolean_answer = models.BooleanField(null=True, blank=True)  # For true/false
-
-    # Grading
+    selected_option = models.ForeignKey(QuestionOption, on_delete=models.CASCADE, null=True, blank=True)
+    text_answer = models.TextField(blank=True)
+    boolean_answer = models.BooleanField(null=True, blank=True)
     is_correct = models.BooleanField(null=True, blank=True)
     marks_awarded = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     teacher_feedback = models.TextField(blank=True)
-
-    # Timestamps
     answered_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -210,17 +193,13 @@ class Answer(models.Model):
         return f"{self.attempt.student.name} - Q{self.question.order}"
 
     def auto_grade(self):
-        """Auto-grade the answer based on question type"""
         if self.question.question_type == 'mcq' and self.selected_option:
             self.is_correct = self.selected_option.is_correct
             self.marks_awarded = self.question.marks if self.is_correct else 0
         elif self.question.question_type == 'true_false' and self.boolean_answer is not None:
-            # This would need logic to determine correct answer for true/false
-            # For now, assume it's stored in expected_answer as 'True' or 'False'
             expected = self.question.expected_answer.lower() == 'true'
             self.is_correct = self.boolean_answer == expected
             self.marks_awarded = self.question.marks if self.is_correct else 0
-        # For essay and short answer, manual grading is required
         self.save()
 
     class Meta:
@@ -228,7 +207,6 @@ class Answer(models.Model):
         unique_together = ['attempt', 'question']
 
 class ExamEnrollment(models.Model):
-    """Students enrolled in an exam"""
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='enrollments')
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='exam_enrollments')
     enrolled_at = models.DateTimeField(auto_now_add=True)
@@ -242,10 +220,7 @@ class ExamEnrollment(models.Model):
         ordering = ['enrolled_at']
 
 class ExamResult(models.Model):
-    """Final results and analytics for exam attempts"""
     attempt = models.OneToOneField(ExamAttempt, on_delete=models.CASCADE, related_name='result')
-
-    # Detailed scoring
     total_questions = models.PositiveIntegerField()
     correct_answers = models.PositiveIntegerField(default=0)
     incorrect_answers = models.PositiveIntegerField(default=0)
@@ -259,7 +234,7 @@ class ExamResult(models.Model):
     rank = models.PositiveIntegerField(null=True, blank=True)
 
     # Generated report
-    detailed_report = models.JSONField(default=dict, blank=True)  # Store detailed analytics
+    detailed_report = models.JSONField(default=dict, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -267,14 +242,12 @@ class ExamResult(models.Model):
         return f"Result: {self.attempt.student.name} - {self.attempt.exam.title}"
 
     def generate_report(self):
-        """Generate detailed performance report"""
         report = {
             'subject_wise_performance': {},
             'question_type_performance': {},
             'time_analysis': {},
             'recommendations': []
         }
-        # Implementation would go here
         self.detailed_report = report
         self.save()
 

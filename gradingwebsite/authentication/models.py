@@ -8,7 +8,7 @@ class StudentProfile(models.Model):
     institution = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.user.username  # Or self.name if you want
+        return self.user.username
 
 class TeacherProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

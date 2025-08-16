@@ -1,6 +1,4 @@
-// Exam taking functionality
 
-// Exam state management
 let examState = {
     currentQuestion: 0,
     totalQuestions: 25,
@@ -10,29 +8,18 @@ let examState = {
     isPaused: false
 };
 
-// Initialize exam
+
 function initializeExam() {
-    // Load exam data from server or localStorage
     loadExamData();
-
-    // Start timer
     startTimer();
-
-    // Load first question
     loadQuestion(0);
-
-    // Generate question navigation
     generateQuestionNavigation();
-
-    // Set up event listeners
     setupEventListeners();
 }
 
 function loadExamData() {
-    // This would typically load from a server
-    // For now, using mock data
     examState.totalQuestions = 25;
-    examState.timeRemaining = 90 * 60; // 90 minutes in seconds
+    examState.timeRemaining = 90 * 60;
 }
 
 function startTimer() {
@@ -60,8 +47,7 @@ function updateTimerDisplay() {
     if (timerElement) {
         timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-        // Add warning class when time is low
-        if (examState.timeRemaining <= 300) { // 5 minutes
+        if (examState.timeRemaining <= 300) { 
             timerElement.classList.add('timer-warning');
         }
     }
@@ -70,27 +56,26 @@ function updateTimerDisplay() {
 function loadQuestion(questionIndex) {
     examState.currentQuestion = questionIndex;
 
-    // Update question counter
+    
     const currentQuestionElement = document.getElementById('current-question');
     if (currentQuestionElement) {
         currentQuestionElement.textContent = questionIndex + 1;
     }
 
-    // Update progress bar
+    
     updateProgressBar();
 
-    // Update navigation buttons
+  
     updateNavigationButtons();
 
-    // Update question navigation highlighting
+
     updateQuestionNavigation();
 
-    // Load question content (this would typically fetch from server)
+  
     loadQuestionContent(questionIndex);
 }
 
 function loadQuestionContent(questionIndex) {
-    // Mock question data - in real app, this would come from server
     const questions = [
         {
             id: 1,
@@ -99,18 +84,13 @@ function loadQuestionContent(questionIndex) {
             options: ['O(n)', 'O(n log n)', 'O(n²)', 'O(2^n)'],
             correctAnswer: 'b'
         },
-        // Add more questions as needed
     ];
 
     const question = questions[questionIndex] || questions[0];
-
-    // Update question display
     updateQuestionDisplay(question);
 }
 
 function updateQuestionDisplay(question) {
-    // This would update the question content in the DOM
-    // Implementation depends on your HTML structure
     console.log('Loading question:', question);
 }
 
@@ -153,7 +133,6 @@ function updateProgressBar() {
         progressBar.setAttribute('aria-valuenow', progress);
     }
 
-    // Update progress text
     const progressText = document.querySelector('.progress + div .small:last-child');
     if (progressText) {
         progressText.textContent = Math.round(progress) + '% Complete';
@@ -201,19 +180,19 @@ function goToQuestion(questionIndex) {
 }
 
 function saveCurrentAnswer() {
-    // Get the selected answer for current question
+   
     const selectedAnswer = document.querySelector(`input[name="question${examState.currentQuestion + 1}"]:checked`);
 
     if (selectedAnswer) {
         examState.answers[examState.currentQuestion] = selectedAnswer.value;
     }
 
-    // Save to localStorage for persistence
+   
     localStorage.setItem('examState', JSON.stringify(examState));
 }
 
 function markForReview() {
-    // Add review flag to current question
+  
     const questionBtn = document.querySelector(`.question-number:nth-child(${examState.currentQuestion + 1})`);
     if (questionBtn) {
         questionBtn.classList.add('flagged');
@@ -228,7 +207,7 @@ function pauseExam() {
         examState.isPaused = true;
         saveCurrentAnswer();
 
-        // Save state and redirect
+        
         localStorage.setItem('examState', JSON.stringify(examState));
         window.location.href = 'current-exams.html';
     }
@@ -249,10 +228,8 @@ function submitExam() {
     if (confirm(message)) {
         examState.isSubmitted = true;
 
-        // Submit to server
         submitToServer();
 
-        // Clear saved state
         localStorage.removeItem('examState');
 
         alert('Exam submitted successfully!');
@@ -269,10 +246,8 @@ function autoSubmitExam() {
 }
 
 function submitToServer() {
-    // This would submit the exam data to the server
     console.log('Submitting exam:', examState);
 
-    // Mock API call
     const examData = {
         examId: 'exam_123',
         studentId: 'student_456',
@@ -281,12 +256,11 @@ function submitToServer() {
         submittedAt: new Date().toISOString()
     };
 
-    // In real app, this would be an actual API call
     console.log('Exam data submitted:', examData);
 }
 
 function setupEventListeners() {
-    // Prevent page refresh/navigation during exam
+    
     window.addEventListener('beforeunload', function(e) {
         if (!examState.isSubmitted) {
             e.preventDefault();
@@ -294,17 +268,16 @@ function setupEventListeners() {
         }
     });
 
-    // Auto-save answers periodically
     setInterval(() => {
         if (!examState.isSubmitted && !examState.isPaused) {
             saveCurrentAnswer();
         }
-    }, 30000); // Save every 30 seconds
+    }, 30000); 
 }
 
-// Initialize when page loads
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if there's a saved exam state
+    
     const savedState = localStorage.getItem('examState');
     if (savedState) {
         examState = JSON.parse(savedState);

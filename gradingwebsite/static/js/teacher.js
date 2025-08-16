@@ -1,6 +1,4 @@
-// Teacher-specific JavaScript functionality
 
-// Sidebar toggle for mobile
 const mobileMenuButton = document.getElementById('mobile-menu-btn');
 const sidebar = document.querySelector('aside.sidebar');
 
@@ -10,7 +8,7 @@ if (mobileMenuButton) {
     });
 }
 
-// Close sidebar when clicking outside on mobile
+
 document.addEventListener('click', (event) => {
     if (window.innerWidth < 768 &&
         !sidebar.contains(event.target) &&
@@ -20,14 +18,14 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// Handle window resize
+
 window.addEventListener('resize', () => {
     if (window.innerWidth >= 768) {
         sidebar.classList.remove('show');
     }
 });
 
-// Custom dropdown hover effects for better UX
+
 const dropdownItems = document.querySelectorAll('.dropdown-item');
 dropdownItems.forEach(item => {
     item.addEventListener('mouseenter', () => {
@@ -38,15 +36,13 @@ dropdownItems.forEach(item => {
     });
 });
 
-// Teacher-specific functionality
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Update active navigation item based on current page
+    
     updateActiveNavigation();
 
-    // Initialize dashboard widgets
     initializeDashboardWidgets();
 
-    // Initialize exam management features
     initializeExamManagement();
 });
 
@@ -63,11 +59,11 @@ function updateActiveNavigation() {
 }
 
 function initializeDashboardWidgets() {
-    // Add any teacher-specific dashboard initialization here
+
     console.log('Teacher dashboard initialized');
 }
 
 function initializeExamManagement() {
-    // Add exam management functionality
+ 
     console.log('Exam management initialized');
 }

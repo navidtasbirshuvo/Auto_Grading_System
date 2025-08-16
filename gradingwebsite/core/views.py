@@ -10,15 +10,11 @@ from authentication.models import StudentProfile, TeacherProfile
 
 @login_required
 def exam_list(request):
-    """List all exams for the current user"""
     try:
-        # Check if user is a teacher or student
         if hasattr(request.user, 'teacherprofile'):
-            # Teacher view - show exams they created
             exams = Exam.objects.filter(teacher=request.user.teacherprofile)
             context = {'exams': exams, 'user_type': 'teacher'}
         elif hasattr(request.user, 'studentprofile'):
-            # Student view - show enrolled exams
             enrollments = ExamEnrollment.objects.filter(
                 student=request.user.studentprofile,
                 is_active=True
@@ -34,7 +30,6 @@ def exam_list(request):
 
 @login_required
 def exam_detail(request, exam_id):
-    """Show exam details"""
     exam = get_object_or_404(Exam, id=exam_id)
 
     context = {
@@ -43,16 +38,13 @@ def exam_detail(request, exam_id):
         'total_questions': exam.get_total_questions(),
     }
 
-    # Add user-specific context
     if hasattr(request.user, 'studentprofile'):
-        # Check if student is enrolled
         enrollment = ExamEnrollment.objects.filter(
             exam=exam,
             student=request.user.studentprofile
         ).first()
         context['is_enrolled'] = enrollment is not None
 
-        # Check previous attempts
         attempts = ExamAttempt.objects.filter(
             exam=exam,
             student=request.user.studentprofile
@@ -64,47 +56,36 @@ def exam_detail(request, exam_id):
 
 @login_required
 def start_exam(request, exam_id):
-    """Start an exam attempt"""
-    # Placeholder for exam starting logic
     exam = get_object_or_404(Exam, id=exam_id)
     return render(request, 'core/start_exam.html', {'exam': exam})
 
 @login_required
 def submit_exam(request, exam_id):
-    """Submit an exam attempt"""
-    # Placeholder for exam submission logic
     exam = get_object_or_404(Exam, id=exam_id)
     return render(request, 'core/submit_exam.html', {'exam': exam})
 
 @login_required
 def question_list(request, exam_id):
-    """List questions for an exam"""
     exam = get_object_or_404(Exam, id=exam_id)
     questions = exam.questions.all().order_by('order')
     return render(request, 'core/question_list.html', {'exam': exam, 'questions': questions})
 
 @login_required
 def question_detail(request, question_id):
-    """Show question details"""
     question = get_object_or_404(Question, id=question_id)
     return render(request, 'core/question_detail.html', {'question': question})
 
 @login_required
 def results_list(request):
-    """List exam results"""
-    # Placeholder for results listing
     return render(request, 'core/results_list.html', {})
 
 @login_required
 def result_detail(request, attempt_id):
-    """Show detailed result for an attempt"""
     attempt = get_object_or_404(ExamAttempt, id=attempt_id)
     return render(request, 'core/result_detail.html', {'attempt': attempt})
 
-# API Views for AJAX calls
 @login_required
 def api_exam_list(request):
-    """API endpoint to get exams as JSON"""
     try:
         if hasattr(request.user, 'teacherprofile'):
             exams = Exam.objects.filter(teacher=request.user.teacherprofile)
@@ -138,7 +119,6 @@ def api_exam_list(request):
 
 @login_required
 def api_subject_list(request):
-    """API endpoint to get subjects as JSON"""
     try:
         if hasattr(request.user, 'teacherprofile'):
             subjects = Subject.objects.filter(teacher=request.user.teacherprofile)
@@ -160,14 +140,12 @@ def api_subject_list(request):
 
 @login_required
 def create_exam(request):
-    """Create a new exam"""
     if not hasattr(request.user, 'teacherprofile'):
         messages.error(request, "Only teachers can create exams.")
         return redirect('teacher-dashboard')
 
     if request.method == 'POST':
         try:
-            # Get form data
             title = request.POST.get('title')
             description = request.POST.get('description', '')
             subject_id = request.POST.get('subject')
@@ -179,21 +157,16 @@ def create_exam(request):
             max_attempts = request.POST.get('max_attempts', 1)
             shuffle_questions = request.POST.get('shuffle_questions') == 'on'
             show_results_immediately = request.POST.get('show_results_immediately') == 'on'
-            auto_enroll_all = request.POST.get('auto_enroll_all') == 'on'  # New field
+            auto_enroll_all = request.POST.get('auto_enroll_all') == 'on'
 
-            # Validate required fields
             if not all([title, subject_id, start_time, end_time, duration_minutes]):
                 messages.error(request, "Please fill in all required fields.")
                 return redirect('create-exam')
 
-            # Get subject
             subject = get_object_or_404(Subject, id=subject_id, teacher=request.user.teacherprofile)
 
-            # Parse datetime strings
             start_datetime = datetime.fromisoformat(start_time.replace('T', ' '))
             end_datetime = datetime.fromisoformat(end_time.replace('T', ' '))
-
-            # Create exam
             exam = Exam.objects.create(
                 title=title,
                 description=description,
@@ -210,7 +183,7 @@ def create_exam(request):
                 status='scheduled'
             )
 
-            # Auto-enroll all students if requested
+
             if auto_enroll_all:
                 students = StudentProfile.objects.all()
                 for student in students:
@@ -229,16 +202,12 @@ def create_exam(request):
             messages.error(request, f"Error creating exam: {str(e)}")
             return redirect('create-exam')
 
-    # GET request - show form
     subjects = Subject.objects.filter(teacher=request.user.teacherprofile)
     return render(request, 'core/create_exam.html', {'subjects': subjects})
 
 @login_required
 def enroll_students(request, exam_id):
-    """Enroll students in an exam"""
     exam = get_object_or_404(Exam, id=exam_id)
-
-    # Check if user is the teacher who created this exam
     if not hasattr(request.user, 'teacherprofile') or exam.teacher != request.user.teacherprofile:
         messages.error(request, "You don't have permission to manage this exam.")
         return redirect('manage-exams')
@@ -247,7 +216,6 @@ def enroll_students(request, exam_id):
         action = request.POST.get('action')
 
         if action == 'enroll_all':
-            # Enroll all students
             students = StudentProfile.objects.all()
             enrolled_count = 0
             for student in students:
@@ -261,7 +229,6 @@ def enroll_students(request, exam_id):
             messages.success(request, f"Enrolled {enrolled_count} new students in the exam.")
 
         elif action == 'enroll_selected':
-            # Enroll selected students
             student_ids = request.POST.getlist('students')
             enrolled_count = 0
             for student_id in student_ids:
@@ -280,7 +247,7 @@ def enroll_students(request, exam_id):
 
         return redirect('enroll-students', exam_id=exam_id)
 
-    # GET request - show enrollment form
+
     enrolled_students = ExamEnrollment.objects.filter(exam=exam, is_active=True).values_list('student_id', flat=True)
     all_students = StudentProfile.objects.all()
     available_students = all_students.exclude(id__in=enrolled_students)

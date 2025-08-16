@@ -1,4 +1,3 @@
-// Authentication related JavaScript
 
 const loginTab = document.getElementById('login-tab');
 const signupTab = document.getElementById('signup-tab');
@@ -19,7 +18,7 @@ function showTab(tab) {
   }
 }
 
-// Handle role-based signup redirection
+
 function handleSignupSubmit(event) {
   event.preventDefault();
 
@@ -35,7 +34,7 @@ function handleSignupSubmit(event) {
   }
 }
 
-// Handle role-based signup button click
+
 function handleSignupClick() {
   const roleSelect = document.getElementById('signup-role');
   const selectedRole = roleSelect ? roleSelect.value : '';
@@ -49,17 +48,17 @@ function handleSignupClick() {
   }
 }
 
-// Initialize default tab
+
 showTab('login');
 
-// Add smooth transitions and enhanced UX
+
 document.addEventListener('DOMContentLoaded', function() {
-  // Check URL parameters for role pre-selection
+ 
   const urlParams = new URLSearchParams(window.location.search);
   const role = urlParams.get('role');
 
   if (role) {
-    // Pre-select the role in both login and signup forms
+    
     const loginRoleSelect = document.getElementById('login-role');
     const signupRoleSelect = document.getElementById('signup-role');
 
@@ -72,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Add focus effects for better accessibility
+  
   const formInputs = document.querySelectorAll('.form-control, .form-select');
   formInputs.forEach(input => {
     input.addEventListener('focus', function() {

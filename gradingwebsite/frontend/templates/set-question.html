@@ -71,8 +71,7 @@
 <li><a class="dropdown-item text-gray-200 d-flex align-items-center" href="#" style="background: none;">
 <span class="material-icons me-2" style="font-size: 1rem;">settings</span>Settings
 </a></li>
-<!-- If you have a settings view, use: -->
-<!-- <a class="dropdown-item text-gray-200 d-flex align-items-center" href="{% url 'teacher-settings' %}" style="background: none;"> -->
+
 <li><a class="dropdown-item text-gray-200 d-flex align-items-center" href="{% url 'login' %}" style="background: none;">
 <span class="material-icons me-2" style="font-size: 1rem;">logout</span>Sign out
 </a></li>
@@ -82,7 +81,7 @@
 </header>
 <main class="flex-fill overflow-auto main-content p-4">
 <div class="container-fluid">
-<!-- Tab Navigation -->
+
 <ul class="nav nav-tabs mb-4" id="questionTabs" role="tablist">
 <li class="nav-item" role="presentation">
 <button class="nav-link active bg-transparent text-gray-200 border-gray-700" id="create-tab" data-bs-toggle="tab" data-bs-target="#create" type="button" role="tab">
@@ -101,9 +100,7 @@
 </li>
 </ul>
 
-<!-- Tab Content -->
 <div class="tab-content" id="questionTabContent">
-<!-- Create Question Tab -->
 <div class="tab-pane fade show active" id="create" role="tabpanel">
 <div class="row">
 <div class="col-lg-8">
@@ -154,7 +151,7 @@
 <label class="form-label text-gray-200">Question Text</label>
 <textarea class="form-control bg-gray-700 border-gray-700 text-gray-100" rows="4" placeholder="Enter your question here..." required></textarea>
 </div>
-<!-- Multiple Choice Options -->
+
 <div id="multipleChoiceOptions" class="d-none">
 <label class="form-label text-gray-200">Answer Options</label>
 <div id="optionsContainer">
@@ -200,7 +197,7 @@
 </button>
 </div>
 
-<!-- True/False Options -->
+
 <div id="trueFalseOptions" class="d-none">
 <label class="form-label text-gray-200">Correct Answer</label>
 <div class="d-flex gap-3">
@@ -215,7 +212,7 @@
 </div>
 </div>
 
-<!-- Short Answer/Essay -->
+
 <div id="textAnswerOptions" class="d-none">
 <label class="form-label text-gray-200">Sample Answer/Keywords</label>
 <textarea class="form-control bg-gray-700 border-gray-700 text-gray-100" rows="3" placeholder="Enter sample answer or keywords for grading..."></textarea>
@@ -247,7 +244,7 @@
 </div>
 </div>
 
-<!-- Preview Panel -->
+
 <div class="col-lg-4">
 <div class="card custom-card">
 <div class="card-body p-4">
@@ -259,7 +256,7 @@
 </div>
 </div>
 
-<!-- Quick Stats -->
+
 <div class="card custom-card mt-3">
 <div class="card-body p-4">
 <h6 class="text-gray-100 mb-3">Quick Stats</h6>
@@ -280,7 +277,7 @@
 </div>
 </div>
 </div>
-{% comment %} <!-- Question Bank Tab -->
+{% comment %}
 <div class="tab-pane fade" id="bank" role="tabpanel">
 <div class="card custom-card">
 <div class="card-body p-4">
@@ -358,7 +355,7 @@
 </div>
 </div> {% endcomment %}
 
-<!-- Create Exam Tab -->
+
 <div class="tab-pane fade" id="exam" role="tabpanel">
 <div class="row">
 <div class="col-lg-8">
@@ -581,8 +578,7 @@ document.getElementById('questionForm').addEventListener('submit', function(e) {
     alert('Question saved successfully!');
 });
 
-// Remove the preventDefault for exam form - let it submit normally
-// The form will now submit to the backend
+
 </script>
 </body>
 </html>

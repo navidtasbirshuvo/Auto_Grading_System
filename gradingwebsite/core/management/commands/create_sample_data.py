@@ -9,23 +9,20 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Creating sample exam data...')
-        
-        # Get existing teacher and student profiles
+
         try:
             teacher = TeacherProfile.objects.first()
             if not teacher:
                 self.stdout.write(self.style.ERROR('No teacher profiles found. Please create a teacher first.'))
                 return
-                
-            students = StudentProfile.objects.all()[:5]  # Get first 5 students
+
+            students = StudentProfile.objects.all()[:5]
             if not students:
                 self.stdout.write(self.style.ERROR('No student profiles found. Please create students first.'))
                 return
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error getting profiles: {e}'))
             return
-
-        # Create subjects
         subjects_data = [
             {'name': 'Computer Science Fundamentals', 'code': 'CS101', 'description': 'Introduction to Computer Science'},
             {'name': 'Data Structures', 'code': 'CS201', 'description': 'Data Structures and Algorithms'},
@@ -46,7 +43,7 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write(f'Created subject: {subject.code} - {subject.name}')
 
-        # Create exams
+
         now = timezone.now()
         exams_data = [
             {
@@ -83,11 +80,9 @@ class Command(BaseCommand):
             )
             if created:
                 self.stdout.write(f'Created exam: {exam.title}')
-                
-                # Create sample questions for each exam
+
                 self.create_sample_questions(exam)
-                
-                # Enroll students in the exam
+
                 for student in students:
                     enrollment, created = ExamEnrollment.objects.get_or_create(
                         exam=exam,
@@ -99,7 +94,6 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Sample data created successfully!'))
 
     def create_sample_questions(self, exam):
-        """Create sample questions for an exam"""
         if 'CS Fundamentals' in exam.title:
             questions_data = [
                 {
@@ -154,8 +148,7 @@ class Command(BaseCommand):
                 order=q_data['order'],
                 expected_answer=q_data.get('expected_answer', '')
             )
-            
-            # Create options for MCQ questions
+
             if q_data['question_type'] == 'mcq' and 'options' in q_data:
                 for i, option_data in enumerate(q_data['options']):
                     QuestionOption.objects.create(
@@ -164,6 +157,5 @@ class Command(BaseCommand):
                         is_correct=option_data['is_correct'],
                         order=i + 1
                     )
-        
-        # Update exam total marks
+
         exam.calculate_total_marks()

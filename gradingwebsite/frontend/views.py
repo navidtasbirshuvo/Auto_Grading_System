@@ -6,8 +6,6 @@ from authentication.models import StudentProfile, TeacherProfile
 def index(request):
     return render(request, 'index.html')
 
-# login_view moved to authentication app
-
 def student_dashboard(request):
     return render(request, 'student-dashboard.html')
 
@@ -22,10 +20,8 @@ def teacher_results(request):
 
 @login_required
 def set_question(request):
-    """Set questions and create exams"""
     context = {}
 
-    # If user is a teacher, provide subjects for exam creation
     if hasattr(request.user, 'teacherprofile'):
         subjects = Subject.objects.filter(teacher=request.user.teacherprofile)
         context['subjects'] = subjects
@@ -59,9 +55,7 @@ def exam_detail(request):
 
 @login_required
 def past_exams(request):
-    """Show past exams for students"""
     if hasattr(request.user, 'studentprofile'):
-        # Get enrolled exams that are past
         enrollments = ExamEnrollment.objects.filter(
             student=request.user.studentprofile,
             is_active=True
@@ -78,9 +72,7 @@ def past_exams(request):
 
 @login_required
 def current_exams(request):
-    """Show currently active exams for students"""
     if hasattr(request.user, 'studentprofile'):
-        # Get enrolled exams that are currently active
         enrollments = ExamEnrollment.objects.filter(
             student=request.user.studentprofile,
             is_active=True,
@@ -98,9 +90,7 @@ def current_exams(request):
 
 @login_required
 def upcoming_exams(request):
-    """Show upcoming exams for students"""
     if hasattr(request.user, 'studentprofile'):
-        # Get enrolled exams that are upcoming
         enrollments = ExamEnrollment.objects.filter(
             student=request.user.studentprofile,
             is_active=True,
@@ -118,7 +108,6 @@ def upcoming_exams(request):
 
 @login_required
 def manage_exams(request):
-    """Show teacher's exams with management options"""
     if hasattr(request.user, 'teacherprofile'):
         exams = Exam.objects.filter(teacher=request.user.teacherprofile).order_by('-created_at')
         context = {

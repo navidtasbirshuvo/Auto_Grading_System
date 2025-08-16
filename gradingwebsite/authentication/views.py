@@ -14,7 +14,7 @@ def student_register(request):
         confirm_password = request.POST.get('confirm_password')
         institution = request.POST.get('institution')
 
-        # Validation
+
         if not all([name, student_id, email, password, confirm_password, institution]):
             return render(request, 'student-register.html', {'error': 'All fields are required'})
 
@@ -101,7 +101,7 @@ def teacher_register(request):
         institution = request.POST.get('institution')
         department = request.POST.get('department')
 
-        # Validation
+
         if not all([name, teacher_id, email, password, confirm_password, institution, department]):
             return render(request, 'teacher-register.html', {'error': 'All fields are required'})
 
@@ -136,4 +136,4 @@ def teacher_register(request):
             return render(request, 'teacher-register.html', {'error': f'Registration failed: {str(e)}'})
     return render(request, 'teacher-register.html')
 
-# Dashboard views moved to frontend app
+
