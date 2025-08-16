@@ -19,6 +19,32 @@ function showTab(tab) {
   }
 }
 
+// Handle role-based signup redirection
+function handleSignupSubmit(event) {
+  event.preventDefault();
+  
+  const roleSelect = document.getElementById('signup-role');
+  const selectedRole = roleSelect.value;
+  
+  if (selectedRole === 'Student') {
+    window.location.href = '/auth/student-register/';
+  } else if (selectedRole === 'Teacher') {
+    window.location.href = '/auth/teacher-register/';
+  }
+}
+
+// Handle role-based signup button click
+function handleSignupClick() {
+  const roleSelect = document.getElementById('signup-role');
+  const selectedRole = roleSelect ? roleSelect.value : 'Student';
+  
+  if (selectedRole === 'Student') {
+    window.location.href = '/auth/student-register/';
+  } else if (selectedRole === 'Teacher') {
+    window.location.href = '/auth/teacher-register/';
+  }
+}
+
 // Initialize default tab
 showTab('login');
 

@@ -37,7 +37,8 @@
       </ul>
 
       <!-- Login Form -->
-      <form id="login-form" method="POST">
+      <form id="login-form" method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
         <div class="mb-3">
           <label for="login-email" class="form-label visually-hidden">Email address</label>
           <input type="email" class="form-control" id="login-email" name="email" placeholder="Email address" required>
@@ -58,8 +59,8 @@
         <div class="mb-3">
           <label for="login-role" class="form-label text-gray-200">Login as</label>
           <select class="form-select" id="login-role" name="role">
-            <option>Student</option>
-            <option>Teacher</option>
+            <option value="Student">Student</option>
+            <option value="Teacher">Teacher</option>
           </select>
         </div>
         <div class="d-grid">
@@ -70,7 +71,7 @@
       </form>
 
       <!-- Signup Form -->
-      <form id="signup-form" method="POST" class="d-none">
+      <form id="signup-form" method="POST" class="d-none" onsubmit="handleSignupSubmit(event)">
         <div class="mb-3">
           <label for="signup-fullname" class="form-label visually-hidden">Full Name</label>
           <input type="text" class="form-control" id="signup-fullname" name="fullname" placeholder="Full Name" required>
@@ -90,12 +91,12 @@
         <div class="mb-3">
           <label for="signup-role" class="form-label text-gray-200">Sign up as</label>
           <select class="form-select" id="signup-role" name="role">
-            <option>Student</option>
-            <option>Teacher</option>
+            <option value="Student">Student</option>
+            <option value="Teacher">Teacher</option>
           </select>
         </div>
         <div class="d-grid">
-          <button type="submit" class="btn btn-custom-primary py-2">
+          <button type="button" class="btn btn-custom-primary py-2" onclick="handleSignupClick()">
             <span class="material-icons align-middle me-2" style="font-size: 1.2rem;">person_add</span> Create Account
           </button>
         </div>

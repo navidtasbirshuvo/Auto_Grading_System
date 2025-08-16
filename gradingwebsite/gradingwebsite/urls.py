@@ -1,15 +1,18 @@
 from django.contrib import admin
 from django.urls import path, include
-from authentication.views import student_dashboard
+from authentication.views import login_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
-    # Add your frontend URLs here
+
+    # Add login at root level to match frontend expectations
+    path('login/', login_view, name='login'),
+
+    # Authentication URLs
+    path('auth/', include('authentication.urls')),
+
+    # Add your frontend URLs here (includes dashboards)
     path('', include('frontend.urls')),
 
-    # Example if you have authentication and core apps
-    path('auth/', include('authentication.urls')),
     #path('core/', include('core.urls')),
-    path('auth/student-dashboard/', student_dashboard, name='student_dashboard')
 ]

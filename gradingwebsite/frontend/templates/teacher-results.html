@@ -33,10 +33,10 @@
 <span class="material-icons">assessment</span>
 <span>Results & Analytics</span>
 </a>
-<a class="nav-item" href="{% url 'students' %}">
+{% comment %} <a class="nav-item" href="{% url 'students' %}">
 <span class="material-icons">group</span>
 <span>Students</span>
-</a>
+</a> {% endcomment %}
 <a class="nav-item" href="{% url 'teacher-profile' %}">
 <span class="material-icons">person</span>
 <span>Profile</span>
@@ -66,9 +66,9 @@
 <li><a class="dropdown-item text-gray-200 d-flex align-items-center" href="{% url 'teacher-profile' %}" style="background: none;">
 <span class="material-icons me-2" style="font-size: 1rem;">person</span>Profile
 </a></li>
-<li><a class="dropdown-item text-gray-200 d-flex align-items-center" href="{% url 'settings' %}" style="background: none;">
+{% comment %} <li><a class="dropdown-item text-gray-200 d-flex align-items-center" href="{% url 'settings' %}" style="background: none;">
 <span class="material-icons me-2" style="font-size: 1rem;">settings</span>Settings
-</a></li>
+</a></li> {% endcomment %}
 <li><a class="dropdown-item text-gray-200 d-flex align-items-center" href="{% url 'login' %}" style="background: none;">
 <span class="material-icons me-2" style="font-size: 1rem;">logout</span>Sign out
 </a></li>

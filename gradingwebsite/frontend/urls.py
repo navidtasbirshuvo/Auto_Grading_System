@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('login/', views.login_view, name='login'),
+    # Redirect login to authentication app
     path('student-dashboard/', views.student_dashboard, name='student-dashboard'),
     path('teacher-dashboard/', views.teacher_dashboard, name='teacher-dashboard'),
     path('student-results/', views.student_results, name='student-results'),
@@ -19,4 +19,7 @@ urlpatterns = [
     path('past-exams/', views.past_exams, name='past-exams'),
     path('current-exams/', views.current_exams, name='current-exams'),
     path('upcoming-exams/', views.upcoming_exams, name='upcoming-exams'),
+    path('manage-exams/', views.manage_exams, name='manage-exams'),
+    path('teacher-students/', views.teacher_students, name='teacher-students'),
+    path('teacher-settings/', views.teacher_settings, name='teacher-settings'),
 ]

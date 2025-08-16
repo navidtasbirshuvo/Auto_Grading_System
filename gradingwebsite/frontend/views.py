@@ -3,8 +3,7 @@ from django.shortcuts import render
 def index(request):
     return render(request, 'index.html')
 
-def login_view(request):
-    return render(request, 'login.html')
+# login_view moved to authentication app
 
 def student_dashboard(request):
     return render(request, 'student-dashboard.html')
@@ -50,3 +49,12 @@ def current_exams(request):
 
 def upcoming_exams(request):
     return render(request, 'upcoming-exams.html')
+
+def manage_exams(request):
+    return render(request, 'manage-exams.html')
+
+def teacher_students(request):
+    return render(request, 'teacher-students.html')
+
+def teacher_settings(request):
+    return render(request, 'teacher-settings.html')

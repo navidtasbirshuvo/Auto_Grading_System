@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GradeMentor AI - Teacher Registration</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+</head>
+<body>
+  <nav class="header shadow-sm py-3 px-4 d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+      <a href="{% url 'index' %}" class="d-flex align-items-center text-decoration-none">
+        <span class="material-icons text-purple-400 me-2" style="font-size: 2rem;">school</span>
+        <h1 class="fs-4 fw-semibold text-gray-100 mb-0">GradeMentor AI</h1>
+      </a>
+    </div>
+  </nav>
+
+  <div class="container d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 80px);">
+    <div class="card login-card p-4 shadow-lg" style="max-width: 500px; width: 100%;">
+      <div class="text-center mb-4">
+        <h2 class="fw-bold text-gray-100">Teacher Registration</h2>
+        <p class="text-gray-400 small">Create your teacher account to manage exams and grade students.</p>
+      </div>
+
+      <form method="POST" action="{% url 'teacher_register' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="full-name" class="form-label visually-hidden">Full Name</label>
+          <input type="text" class="form-control" id="full-name" name="fullname" placeholder="Full Name" required>
+        </div>
+        <div class="mb-3">
+          <label for="email" class="form-label visually-hidden">Email address</label>
+          <input type="email" class="form-control" id="email" name="email" placeholder="Email address" required>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label visually-hidden">Password</label>
+          <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+        </div>
+        <div class="mb-3">
+          <label for="confirm-password" class="form-label visually-hidden">Confirm Password</label>
+          <input type="password" class="form-control" id="confirm-password" name="confirm_password" placeholder="Confirm Password" required>
+        </div>
+        <div class="mb-3">
+          <label for="teacher-id" class="form-label visually-hidden">Teacher ID</label>
+          <input type="text" class="form-control" id="teacher-id" name="teacher_id" placeholder="Teacher ID" required>
+        </div>
+        <div class="mb-3">
+          <label for="institution" class="form-label visually-hidden">Institution</label>
+          <input type="text" class="form-control" id="institution" name="institution" placeholder="School / Institution Name" required>
+        </div>
+        <div class="mb-3">
+          <label for="department" class="form-label visually-hidden">Department</label>
+          <input type="text" class="form-control" id="department" name="department" placeholder="Department" required>
+        </div>
+        <div class="d-grid">
+          <button type="submit" class="btn btn-custom-primary py-2">
+            <span class="material-icons align-middle me-2" style="font-size: 1.2rem;">person_add</span> Register as Teacher
+          </button>
+        </div>
+        <p class="text-center mt-3 small text-gray-400">
+          Already have an account? <a href="{% url 'login' %}" class="text-purple-400 text-decoration-none">Login</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/auth.js' %}"></script>
+</body>
+</html>
