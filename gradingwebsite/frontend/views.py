@@ -1,4 +1,7 @@
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from core.models import Exam, Subject, ExamEnrollment
+from authentication.models import StudentProfile, TeacherProfile
 
 def index(request):
     return render(request, 'index.html')
@@ -17,8 +20,21 @@ def student_results(request):
 def teacher_results(request):
     return render(request, 'teacher-results.html')
 
+@login_required
 def set_question(request):
-    return render(request, 'set-question.html')
+    """Set questions and create exams"""
+    context = {}
+
+    # If user is a teacher, provide subjects for exam creation
+    if hasattr(request.user, 'teacherprofile'):
+        subjects = Subject.objects.filter(teacher=request.user.teacherprofile)
+        context['subjects'] = subjects
+        context['user_type'] = 'teacher'
+    else:
+        context['subjects'] = []
+        context['user_type'] = 'unknown'
+
+    return render(request, 'set-question.html', context)
 
 def student_login(request):
     return render(request, 'student-login.html')
@@ -41,17 +57,78 @@ def teacher_profile(request):
 def exam_detail(request):
     return render(request, 'exam-detail.html')
 
+@login_required
 def past_exams(request):
-    return render(request, 'past-exams.html')
+    """Show past exams for students"""
+    if hasattr(request.user, 'studentprofile'):
+        # Get enrolled exams that are past
+        enrollments = ExamEnrollment.objects.filter(
+            student=request.user.studentprofile,
+            is_active=True
+        )
+        past_exams = [enrollment.exam for enrollment in enrollments if enrollment.exam.is_past]
+        context = {
+            'exams': past_exams,
+            'user_type': 'student'
+        }
+    else:
+        context = {'exams': [], 'user_type': 'unknown'}
 
+    return render(request, 'past-exams.html', context)
+
+@login_required
 def current_exams(request):
-    return render(request, 'current-exams.html')
+    """Show currently active exams for students"""
+    if hasattr(request.user, 'studentprofile'):
+        # Get enrolled exams that are currently active
+        enrollments = ExamEnrollment.objects.filter(
+            student=request.user.studentprofile,
+            is_active=True,
+            exam__status='active'
+        )
+        current_exams = [enrollment.exam for enrollment in enrollments if enrollment.exam.is_active]
+        context = {
+            'exams': current_exams,
+            'user_type': 'student'
+        }
+    else:
+        context = {'exams': [], 'user_type': 'unknown'}
 
+    return render(request, 'current-exams.html', context)
+
+@login_required
 def upcoming_exams(request):
-    return render(request, 'upcoming-exams.html')
+    """Show upcoming exams for students"""
+    if hasattr(request.user, 'studentprofile'):
+        # Get enrolled exams that are upcoming
+        enrollments = ExamEnrollment.objects.filter(
+            student=request.user.studentprofile,
+            is_active=True,
+            exam__status__in=['scheduled', 'active']
+        )
+        upcoming_exams = [enrollment.exam for enrollment in enrollments if enrollment.exam.is_upcoming]
+        context = {
+            'exams': upcoming_exams,
+            'user_type': 'student'
+        }
+    else:
+        context = {'exams': [], 'user_type': 'unknown'}
 
+    return render(request, 'upcoming-exams.html', context)
+
+@login_required
 def manage_exams(request):
-    return render(request, 'manage-exams.html')
+    """Show teacher's exams with management options"""
+    if hasattr(request.user, 'teacherprofile'):
+        exams = Exam.objects.filter(teacher=request.user.teacherprofile).order_by('-created_at')
+        context = {
+            'exams': exams,
+            'user_type': 'teacher'
+        }
+    else:
+        context = {'exams': [], 'user_type': 'unknown'}
+
+    return render(request, 'manage-exams.html', context)
 
 def teacher_students(request):
     return render(request, 'teacher-students.html')

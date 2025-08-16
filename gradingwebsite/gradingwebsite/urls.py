@@ -14,5 +14,6 @@ urlpatterns = [
     # Add your frontend URLs here (includes dashboards)
     path('', include('frontend.urls')),
 
-    #path('core/', include('core.urls')),
+    # Core app URLs (exam system)
+    path('core/', include('core.urls')),
 ]

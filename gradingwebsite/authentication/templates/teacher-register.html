@@ -27,7 +27,13 @@
         <p class="text-gray-400 small">Create your teacher account to manage exams and grade students.</p>
       </div>
 
-      <form method="POST" action="{% url 'teacher_register' %}">
+      {% if error %}
+        <div class="alert alert-danger" role="alert">
+          <span class="material-icons me-2">error</span>{{ error }}
+        </div>
+      {% endif %}
+
+      <form method="POST" action="{% url 'teacher-register' %}">
         {% csrf_token %}
         <div class="mb-3">
           <label for="full-name" class="form-label visually-hidden">Full Name</label>

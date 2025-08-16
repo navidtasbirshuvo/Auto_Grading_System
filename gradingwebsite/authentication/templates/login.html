@@ -27,6 +27,17 @@
         <p class="text-gray-400 small">Login or create an account to get started.</p>
       </div>
 
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <span class="material-icons me-2">
+              {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}
+            </span>{{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
       <ul class="nav nav-tabs justify-content-center mb-4">
         <li class="nav-item">
           <button class="nav-link active-tab" id="login-tab" onclick="showTab('login')">Login</button>

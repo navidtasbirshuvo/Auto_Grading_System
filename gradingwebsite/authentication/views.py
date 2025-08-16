@@ -14,11 +14,22 @@ def student_register(request):
         confirm_password = request.POST.get('confirm_password')
         institution = request.POST.get('institution')
 
+        # Validation
+        if not all([name, student_id, email, password, confirm_password, institution]):
+            return render(request, 'student-register.html', {'error': 'All fields are required'})
+
         if password != confirm_password:
             return render(request, 'student-register.html', {'error': 'Passwords do not match'})
 
+        if len(password) < 6:
+            return render(request, 'student-register.html', {'error': 'Password must be at least 6 characters long'})
+
         if User.objects.filter(username=student_id).exists():
-            return render(request, 'student-register.html', {'error': 'Student already registered'})
+            return render(request, 'student-register.html', {'error': 'Student ID already registered'})
+
+        if User.objects.filter(email=email).exists():
+            return render(request, 'student-register.html', {'error': 'Email already registered'})
+
         try:
             user = User.objects.create_user(username=student_id, email=email, password=password)
             print("User Created: ", user.username)
@@ -30,11 +41,11 @@ def student_register(request):
             )
 
             print("Student profile created for:", student_id)
-
-            return redirect('login')  # Use named URL, not 'login.html'
+            messages.success(request, 'Student account created successfully! Please login.')
+            return redirect('login')
         except Exception as e:
             print("Error creating user or profile:", e)
-            return render(request, 'student-register.html', {'error': str(e)})
+            return render(request, 'student-register.html', {'error': f'Registration failed: {str(e)}'})
     return render(request, 'student-register.html')
 
 def login_view(request):
@@ -90,11 +101,22 @@ def teacher_register(request):
         institution = request.POST.get('institution')
         department = request.POST.get('department')
 
+        # Validation
+        if not all([name, teacher_id, email, password, confirm_password, institution, department]):
+            return render(request, 'teacher-register.html', {'error': 'All fields are required'})
+
         if password != confirm_password:
             return render(request, 'teacher-register.html', {'error': 'Passwords do not match'})
 
+        if len(password) < 6:
+            return render(request, 'teacher-register.html', {'error': 'Password must be at least 6 characters long'})
+
         if User.objects.filter(username=teacher_id).exists():
-            return render(request, 'teacher-register.html', {'error': 'Teacher already registered'})
+            return render(request, 'teacher-register.html', {'error': 'Teacher ID already registered'})
+
+        if User.objects.filter(email=email).exists():
+            return render(request, 'teacher-register.html', {'error': 'Email already registered'})
+
         try:
             user = User.objects.create_user(username=teacher_id, email=email, password=password)
             print("User Created: ", user.username)
@@ -107,11 +129,11 @@ def teacher_register(request):
             )
 
             print("Teacher profile created for:", teacher_id)
-
-            return redirect('login')  # Use named URL, not 'login.html'
+            messages.success(request, 'Teacher account created successfully! Please login.')
+            return redirect('login')
         except Exception as e:
             print("Error creating user or profile:", e)
-            return render(request, 'teacher-register.html', {'error': str(e)})
+            return render(request, 'teacher-register.html', {'error': f'Registration failed: {str(e)}'})
     return render(request, 'teacher-register.html')
 
 # Dashboard views moved to frontend app

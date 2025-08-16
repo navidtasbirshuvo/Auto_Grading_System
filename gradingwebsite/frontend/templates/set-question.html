@@ -119,8 +119,7 @@
 <option value="computer-science">Computer Science</option>
 <option value="mathematics">Mathematics</option>
 <option value="physics">Physics</option>
-<option value="chemistry">Chemistry</option>
-<option value="history">History</option>
+
 </select>
 </div>
 <div class="col-md-6">
@@ -134,7 +133,7 @@
 </select>
 </div>
 </div>
-<div class="mb-3">
+{% comment %} <div class="mb-3">
 <label class="form-label text-gray-200">Difficulty Level</label>
 <div class="d-flex gap-3">
 <div class="form-check">
@@ -150,7 +149,7 @@
 <label class="form-check-label text-gray-200" for="hard">Hard</label>
 </div>
 </div>
-</div>
+</div> {% endcomment %}
 <div class="mb-3">
 <label class="form-label text-gray-200">Question Text</label>
 <textarea class="form-control bg-gray-700 border-gray-700 text-gray-100" rows="4" placeholder="Enter your question here..." required></textarea>
@@ -281,7 +280,7 @@
 </div>
 </div>
 </div>
-<!-- Question Bank Tab -->
+{% comment %} <!-- Question Bank Tab -->
 <div class="tab-pane fade" id="bank" role="tabpanel">
 <div class="card custom-card">
 <div class="card-body p-4">
@@ -357,7 +356,7 @@
 </div>
 </div>
 </div>
-</div>
+</div> {% endcomment %}
 
 <!-- Create Exam Tab -->
 <div class="tab-pane fade" id="exam" role="tabpanel">
@@ -366,50 +365,51 @@
 <div class="card custom-card">
 <div class="card-body p-4">
 <h5 class="text-gray-100 mb-4">Create New Exam</h5>
-<form id="examForm">
+<form method="POST" action="{% url 'create-exam' %}">
+{% csrf_token %}
 <div class="row mb-3">
 <div class="col-md-6">
 <label class="form-label text-gray-200">Exam Title</label>
-<input type="text" class="form-control bg-gray-700 border-gray-700 text-gray-100" placeholder="Enter exam title" required>
+<input type="text" name="title" class="form-control bg-gray-700 border-gray-700 text-gray-100" placeholder="Enter exam title" required>
 </div>
 <div class="col-md-6">
 <label class="form-label text-gray-200">Subject</label>
-<select class="form-select bg-gray-700 border-gray-700 text-gray-100" required>
+<select name="subject" class="form-select bg-gray-700 border-gray-700 text-gray-100" required>
 <option value="">Select Subject</option>
-<option value="computer-science">Computer Science</option>
-<option value="mathematics">Mathematics</option>
-<option value="physics">Physics</option>
+{% for subject in subjects %}
+<option value="{{ subject.id }}">{{ subject.code }} - {{ subject.name }}</option>
+{% endfor %}
 </select>
 </div>
 </div>
 <div class="row mb-3">
 <div class="col-md-4">
 <label class="form-label text-gray-200">Duration (minutes)</label>
-<input type="number" class="form-control bg-gray-700 border-gray-700 text-gray-100" min="1" value="60" required>
+<input type="number" name="duration_minutes" class="form-control bg-gray-700 border-gray-700 text-gray-100" min="1" value="60" required>
 </div>
 <div class="col-md-4">
 <label class="form-label text-gray-200">Total Points</label>
-<input type="number" class="form-control bg-gray-700 border-gray-700 text-gray-100" min="1" value="100" required>
+<input type="number" name="total_marks" class="form-control bg-gray-700 border-gray-700 text-gray-100" min="1" value="100" required>
 </div>
 <div class="col-md-4">
-<label class="form-label text-gray-200">Passing Score (%)</label>
-<input type="number" class="form-control bg-gray-700 border-gray-700 text-gray-100" min="1" max="100" value="60" required>
+<label class="form-label text-gray-200">Passing Score</label>
+<input type="number" name="passing_marks" class="form-control bg-gray-700 border-gray-700 text-gray-100" min="1" value="60" required>
 </div>
 </div>
 <div class="mb-3">
 <label class="form-label text-gray-200">Instructions</label>
-<textarea class="form-control bg-gray-700 border-gray-700 text-gray-100" rows="3" placeholder="Enter exam instructions for students..."></textarea>
+<textarea name="description" class="form-control bg-gray-700 border-gray-700 text-gray-100" rows="3" placeholder="Enter exam instructions for students..."></textarea>
 </div>
 <div class="mb-3">
 <label class="form-label text-gray-200">Schedule</label>
 <div class="row">
 <div class="col-md-6">
 <label class="form-label text-gray-300 small">Start Date & Time</label>
-<input type="datetime-local" class="form-control bg-gray-700 border-gray-700 text-gray-100" required>
+<input type="datetime-local" name="start_time" class="form-control bg-gray-700 border-gray-700 text-gray-100" required>
 </div>
 <div class="col-md-6">
 <label class="form-label text-gray-300 small">End Date & Time</label>
-<input type="datetime-local" class="form-control bg-gray-700 border-gray-700 text-gray-100" required>
+<input type="datetime-local" name="end_time" class="form-control bg-gray-700 border-gray-700 text-gray-100" required>
 </div>
 </div>
 </div>
@@ -430,21 +430,21 @@
 <div class="card-body p-4">
 <h6 class="text-gray-100 mb-3">Exam Settings</h6>
 <div class="form-check mb-3">
-<input class="form-check-input" type="checkbox" id="randomizeQuestions">
+<input class="form-check-input" type="checkbox" name="shuffle_questions" id="randomizeQuestions">
 <label class="form-check-label text-gray-200" for="randomizeQuestions">
 Randomize Question Order
 </label>
 </div>
 <div class="form-check mb-3">
-<input class="form-check-input" type="checkbox" id="showResults">
+<input class="form-check-input" type="checkbox" name="show_results_immediately" id="showResults" checked>
 <label class="form-check-label text-gray-200" for="showResults">
 Show Results Immediately
 </label>
 </div>
 <div class="form-check mb-3">
-<input class="form-check-input" type="checkbox" id="allowReview">
-<label class="form-check-label text-gray-200" for="allowReview">
-Allow Question Review
+<input class="form-check-input" type="checkbox" name="auto_enroll_all" id="autoEnrollAll" checked>
+<label class="form-check-label text-gray-200" for="autoEnrollAll">
+Auto-enroll All Students
 </label>
 </div>
 <div class="form-check">
@@ -581,10 +581,8 @@ document.getElementById('questionForm').addEventListener('submit', function(e) {
     alert('Question saved successfully!');
 });
 
-document.getElementById('examForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    alert('Exam created successfully!');
-});
+// Remove the preventDefault for exam form - let it submit normally
+// The form will now submit to the backend
 </script>
 </body>
 </html>

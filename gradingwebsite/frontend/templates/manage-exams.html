@@ -77,19 +77,72 @@
         <div class="card custom-card p-4">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fs-5 fw-semibold text-gray-100">Your Exams</h3>
-            <button class="btn btn-custom-primary">
+            <a href="{% url 'set-question' %}" class="btn btn-custom-primary">
               <span class="material-icons me-2">add</span>Create New Exam
-            </button>
+            </a>
           </div>
-          
-          <div class="text-center py-5">
-            <span class="material-icons text-gray-400 mb-3" style="font-size: 4rem;">assignment</span>
-            <h4 class="text-gray-300 mb-2">Manage Exams</h4>
-            <p class="text-gray-400">This page is under development. You can create and manage exams here.</p>
-            <button class="btn btn-custom-primary mt-3">
-              <span class="material-icons me-2">add_circle_outline</span>Get Started
-            </button>
-          </div>
+
+          {% if exams %}
+            <div class="row">
+              {% for exam in exams %}
+                <div class="col-12 col-md-6 col-lg-4 mb-4">
+                  <div class="card custom-card h-100">
+                    <div class="card-body p-4">
+                      <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title text-gray-100 mb-0">{{ exam.title }}</h5>
+                        <span class="badge
+                          {% if exam.status == 'draft' %}bg-secondary
+                          {% elif exam.status == 'scheduled' %}bg-info
+                          {% elif exam.status == 'active' %}bg-success
+                          {% elif exam.status == 'completed' %}bg-primary
+                          {% else %}bg-warning{% endif %}">
+                          {{ exam.get_status_display }}
+                        </span>
+                      </div>
+
+                      <p class="text-gray-400 mb-2">
+                        <span class="material-icons me-1" style="font-size: 1rem;">subject</span>
+                        {{ exam.subject.name }}
+                      </p>
+
+                      <p class="text-gray-400 mb-2">
+                        <span class="material-icons me-1" style="font-size: 1rem;">schedule</span>
+                        {{ exam.start_time|date:"M d, Y H:i" }}
+                      </p>
+
+                      <p class="text-gray-400 mb-3">
+                        <span class="material-icons me-1" style="font-size: 1rem;">quiz</span>
+                        {{ exam.get_total_questions }} questions • {{ exam.total_marks }} marks
+                      </p>
+
+                      <p class="text-gray-400 mb-3">
+                        <span class="material-icons me-1" style="font-size: 1rem;">group</span>
+                        {{ exam.get_enrolled_students_count }} students enrolled
+                      </p>
+
+                      <div class="d-grid gap-2">
+                        <a href="{% url 'exam-detail' exam.id %}" class="btn btn-custom-primary btn-sm">
+                          <span class="material-icons me-2" style="font-size: 1rem;">visibility</span>View Details
+                        </a>
+                        <a href="{% url 'enroll-students' exam.id %}" class="btn btn-custom-secondary btn-sm">
+                          <span class="material-icons me-2" style="font-size: 1rem;">group_add</span>Manage Students
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-5">
+              <span class="material-icons text-gray-400 mb-3" style="font-size: 4rem;">assignment</span>
+              <h4 class="text-gray-300 mb-2">No Exams Created Yet</h4>
+              <p class="text-gray-400">Create your first exam to get started with the grading system.</p>
+              <a href="{% url 'set-question' %}" class="btn btn-custom-primary mt-3">
+                <span class="material-icons me-2">add_circle_outline</span>Create Your First Exam
+              </a>
+            </div>
+          {% endif %}
         </div>
       </div>
     </main>
