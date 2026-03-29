@@ -1,263 +1,208 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
 from django.contrib import messages
-from django.utils import timezone
-from datetime import datetime
-from .models import Exam, Question, Subject, ExamAttempt, ExamEnrollment, QuestionOption
+from .models import Question, StudentAnswer
 from authentication.models import StudentProfile, TeacherProfile
+from .services import grade_answer
+
+# ==============================
+# TEACHER VIEWS
+# ==============================
 
 @login_required
-def exam_list(request):
-    try:
-        if hasattr(request.user, 'teacherprofile'):
-            exams = Exam.objects.filter(teacher=request.user.teacherprofile)
-            context = {'exams': exams, 'user_type': 'teacher'}
-        elif hasattr(request.user, 'studentprofile'):
-            enrollments = ExamEnrollment.objects.filter(
-                student=request.user.studentprofile,
-                is_active=True
-            )
-            exams = [enrollment.exam for enrollment in enrollments]
-            context = {'exams': exams, 'user_type': 'student'}
-        else:
-            context = {'exams': [], 'user_type': 'unknown'}
-
-        return render(request, 'core/exam_list.html', context)
-    except Exception as e:
-        return render(request, 'core/exam_list.html', {'error': str(e)})
-
-@login_required
-def exam_detail(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-
-    context = {
-        'exam': exam,
-        'questions': exam.questions.all().order_by('order'),
-        'total_questions': exam.get_total_questions(),
-    }
-
-    if hasattr(request.user, 'studentprofile'):
-        enrollment = ExamEnrollment.objects.filter(
-            exam=exam,
-            student=request.user.studentprofile
-        ).first()
-        context['is_enrolled'] = enrollment is not None
-
-        attempts = ExamAttempt.objects.filter(
-            exam=exam,
-            student=request.user.studentprofile
-        ).order_by('-started_at')
-        context['attempts'] = attempts
-        context['can_attempt'] = len(attempts) < exam.max_attempts
-
-    return render(request, 'core/exam_detail.html', context)
-
-@login_required
-def start_exam(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-    return render(request, 'core/start_exam.html', {'exam': exam})
-
-@login_required
-def submit_exam(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-    return render(request, 'core/submit_exam.html', {'exam': exam})
-
-@login_required
-def question_list(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-    questions = exam.questions.all().order_by('order')
-    return render(request, 'core/question_list.html', {'exam': exam, 'questions': questions})
-
-@login_required
-def question_detail(request, question_id):
-    question = get_object_or_404(Question, id=question_id)
-    return render(request, 'core/question_detail.html', {'question': question})
-
-@login_required
-def results_list(request):
-    return render(request, 'core/results_list.html', {})
-
-@login_required
-def result_detail(request, attempt_id):
-    attempt = get_object_or_404(ExamAttempt, id=attempt_id)
-    return render(request, 'core/result_detail.html', {'attempt': attempt})
-
-@login_required
-def api_exam_list(request):
-    try:
-        if hasattr(request.user, 'teacherprofile'):
-            exams = Exam.objects.filter(teacher=request.user.teacherprofile)
-        elif hasattr(request.user, 'studentprofile'):
-            enrollments = ExamEnrollment.objects.filter(
-                student=request.user.studentprofile,
-                is_active=True
-            )
-            exams = [enrollment.exam for enrollment in enrollments]
-        else:
-            exams = []
-
-        exam_data = []
-        for exam in exams:
-            exam_data.append({
-                'id': exam.id,
-                'title': exam.title,
-                'subject': exam.subject.name,
-                'start_time': exam.start_time.isoformat(),
-                'end_time': exam.end_time.isoformat(),
-                'status': exam.status,
-                'total_marks': exam.total_marks,
-                'is_active': exam.is_active,
-                'is_upcoming': exam.is_upcoming,
-                'is_past': exam.is_past,
-            })
-
-        return JsonResponse({'exams': exam_data})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-@login_required
-def api_subject_list(request):
-    try:
-        if hasattr(request.user, 'teacherprofile'):
-            subjects = Subject.objects.filter(teacher=request.user.teacherprofile)
-        else:
-            subjects = Subject.objects.all()
-
-        subject_data = []
-        for subject in subjects:
-            subject_data.append({
-                'id': subject.id,
-                'name': subject.name,
-                'code': subject.code,
-                'description': subject.description,
-            })
-
-        return JsonResponse({'subjects': subject_data})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-@login_required
-def create_exam(request):
+def teacher_dashboard(request):
     if not hasattr(request.user, 'teacherprofile'):
-        messages.error(request, "Only teachers can create exams.")
+        messages.error(request, "Access denied. Teacher only.")
+        return redirect('login')
+
+    questions = Question.objects.filter(teacher=request.user).order_by('-created_at')
+    return render(request, 'core/teacher_dashboard.html', {'questions': questions})
+
+@login_required
+def create_question(request):
+    if not hasattr(request.user, 'teacherprofile'):
+        return redirect('student-dashboard')
+
+    if request.method == 'POST':
+        question_text = request.POST.get('question_text')
+        correct_answer = request.POST.get('correct_answer')
+
+        if not question_text or not correct_answer:
+            messages.error(request, "Both question and correct answer are required.")
+        else:
+            Question.objects.create(
+                teacher=request.user,
+                question_text=question_text,
+                correct_answer=correct_answer
+            )
+            messages.success(request, "Question created successfully.")
+            return redirect('teacher-dashboard')
+
+    return render(request, 'core/create_question.html')
+
+@login_required
+def teacher_results(request):
+    """View all student answers for teacher's questions"""
+    if not hasattr(request.user, 'teacherprofile'):
+        return redirect('student-dashboard')
+        
+    # Get all answers for questions created by this teacher
+    answers = StudentAnswer.objects.filter(question__teacher=request.user).select_related('student', 'question').order_by('-submitted_at')
+    
+    return render(request, 'core/teacher_results.html', {'answers': answers})
+
+@login_required
+def delete_result(request, answer_id):
+    if not hasattr(request.user, 'teacherprofile'):
+        messages.error(request, "Access denied.")
+        return redirect('student-dashboard')
+        
+    if request.method == 'POST':
+        answer = get_object_or_404(StudentAnswer, id=answer_id)
+        if answer.question.teacher != request.user:
+            messages.error(request, "You can only delete results for your own questions.")
+            return redirect('teacher-results')
+            
+        answer.delete()
+        messages.success(request, "Result deleted successfully.")
+        
+    return redirect('teacher-results')
+
+# ==============================
+# STUDENT VIEWS
+# ==============================
+
+@login_required
+def student_results(request):
+    """View all answers submitted by this student"""
+    if not hasattr(request.user, 'studentprofile'):
+        return redirect('teacher-dashboard')
+        
+    answers = StudentAnswer.objects.filter(student=request.user).select_related('question').order_by('-submitted_at')
+    return render(request, 'core/student_results.html', {'answers': answers})
+
+@login_required
+def student_exams(request):
+    """View available exams for student"""
+    if not hasattr(request.user, 'studentprofile'):
         return redirect('teacher-dashboard')
 
-    if request.method == 'POST':
-        try:
-            title = request.POST.get('title')
-            description = request.POST.get('description', '')
-            subject_id = request.POST.get('subject')
-            start_time = request.POST.get('start_time')
-            end_time = request.POST.get('end_time')
-            duration_minutes = request.POST.get('duration_minutes')
-            total_marks = request.POST.get('total_marks', 0)
-            passing_marks = request.POST.get('passing_marks', 0)
-            max_attempts = request.POST.get('max_attempts', 1)
-            shuffle_questions = request.POST.get('shuffle_questions') == 'on'
-            show_results_immediately = request.POST.get('show_results_immediately') == 'on'
-            auto_enroll_all = request.POST.get('auto_enroll_all') == 'on'
+    # Get all active questions
+    all_questions = Question.objects.filter(is_active=True).order_by('-created_at')
+    
+    # Get answers by this student mapping question_id -> answer_id
+    student_answers = StudentAnswer.objects.filter(student=request.user)
+    answer_map = {ans.question_id: ans.id for ans in student_answers}
+    
+    questions_data = []
+    for q in all_questions:
+        ans_id = answer_map.get(q.id)
+        questions_data.append({
+            'id': q.id,
+            'text': q.question_text,
+            'is_answered': ans_id is not None,
+            'answer_id': ans_id
+        })
 
-            if not all([title, subject_id, start_time, end_time, duration_minutes]):
-                messages.error(request, "Please fill in all required fields.")
-                return redirect('create-exam')
-
-            subject = get_object_or_404(Subject, id=subject_id, teacher=request.user.teacherprofile)
-
-            start_datetime = datetime.fromisoformat(start_time.replace('T', ' '))
-            end_datetime = datetime.fromisoformat(end_time.replace('T', ' '))
-            exam = Exam.objects.create(
-                title=title,
-                description=description,
-                subject=subject,
-                teacher=request.user.teacherprofile,
-                start_time=start_datetime,
-                end_time=end_datetime,
-                duration_minutes=int(duration_minutes),
-                total_marks=int(total_marks),
-                passing_marks=int(passing_marks),
-                max_attempts=int(max_attempts),
-                shuffle_questions=shuffle_questions,
-                show_results_immediately=show_results_immediately,
-                status='scheduled'
-            )
-
-
-            if auto_enroll_all:
-                students = StudentProfile.objects.all()
-                for student in students:
-                    ExamEnrollment.objects.get_or_create(
-                        exam=exam,
-                        student=student,
-                        defaults={'is_active': True}
-                    )
-                messages.success(request, f"Exam created successfully! {students.count()} students enrolled automatically.")
-            else:
-                messages.success(request, "Exam created successfully!")
-
-            return redirect('manage-exams')
-
-        except Exception as e:
-            messages.error(request, f"Error creating exam: {str(e)}")
-            return redirect('create-exam')
-
-    subjects = Subject.objects.filter(teacher=request.user.teacherprofile)
-    return render(request, 'core/create_exam.html', {'subjects': subjects})
+    return render(request, 'core/student_exams.html', {'questions': questions_data})
 
 @login_required
-def enroll_students(request, exam_id):
-    exam = get_object_or_404(Exam, id=exam_id)
-    if not hasattr(request.user, 'teacherprofile') or exam.teacher != request.user.teacherprofile:
-        messages.error(request, "You don't have permission to manage this exam.")
-        return redirect('manage-exams')
+def profile_view(request):
+    user = request.user
+    profile = None
+    
+    if hasattr(user, 'teacherprofile'):
+        profile = user.teacherprofile
+    elif hasattr(user, 'studentprofile'):
+        profile = user.studentprofile
+        
+    return render(request, 'core/profile.html', {
+        'profile': profile,
+        'user': user
+    })
 
-    if request.method == 'POST':
-        action = request.POST.get('action')
+def student_dashboard(request):
+    if not hasattr(request.user, 'studentprofile'):
+        messages.error(request, "Access denied. Student only.")
+        return redirect('login')
 
-        if action == 'enroll_all':
-            students = StudentProfile.objects.all()
-            enrolled_count = 0
-            for student in students:
-                enrollment, created = ExamEnrollment.objects.get_or_create(
-                    exam=exam,
-                    student=student,
-                    defaults={'is_active': True}
-                )
-                if created:
-                    enrolled_count += 1
-            messages.success(request, f"Enrolled {enrolled_count} new students in the exam.")
-
-        elif action == 'enroll_selected':
-            student_ids = request.POST.getlist('students')
-            enrolled_count = 0
-            for student_id in student_ids:
-                try:
-                    student = StudentProfile.objects.get(id=student_id)
-                    enrollment, created = ExamEnrollment.objects.get_or_create(
-                        exam=exam,
-                        student=student,
-                        defaults={'is_active': True}
-                    )
-                    if created:
-                        enrolled_count += 1
-                except StudentProfile.DoesNotExist:
-                    continue
-            messages.success(request, f"Enrolled {enrolled_count} students in the exam.")
-
-        return redirect('enroll-students', exam_id=exam_id)
-
-
-    enrolled_students = ExamEnrollment.objects.filter(exam=exam, is_active=True).values_list('student_id', flat=True)
-    all_students = StudentProfile.objects.all()
-    available_students = all_students.exclude(id__in=enrolled_students)
+    # Calculate Stats
+    total_exams = Question.objects.filter(is_active=True).count()
+    student_answers = StudentAnswer.objects.filter(student=request.user)
+    completed_exams = student_answers.count()
+    
+    # Calculate Average Score
+    graded_answers = [a for a in student_answers if a.llm_score is not None]
+    if graded_answers:
+        avg_score = sum(a.llm_score for a in graded_answers) / len(graded_answers)
+        avg_score = round(avg_score, 1)
+    else:
+        avg_score = 0
 
     context = {
-        'exam': exam,
-        'enrolled_students': ExamEnrollment.objects.filter(exam=exam, is_active=True),
-        'available_students': available_students,
-        'total_students': all_students.count(),
-        'enrolled_count': len(enrolled_students)
+        'stats': {
+            'total_exams': total_exams,
+            'completed_exams': completed_exams,
+            'avg_score': avg_score
+        }
     }
 
-    return render(request, 'core/enroll_students.html', context)
+    return render(request, 'core/student_dashboard.html', context)
+
+@login_required
+def attempt_question(request, question_id):
+    if not hasattr(request.user, 'studentprofile'):
+        return redirect('teacher-dashboard')
+
+    question = get_object_or_404(Question, id=question_id)
+    
+    # Check if already answered
+    if StudentAnswer.objects.filter(student=request.user, question=question).exists():
+        messages.info(request, "You have already answered this question.")
+        return redirect('student-dashboard')
+
+    if request.method == 'POST':
+        user_answer = request.POST.get('answer')
+        
+        if not user_answer:
+            messages.error(request, "Please provide an answer.")
+        else:
+            # Create the answer record first
+            student_answer = StudentAnswer(
+                student=request.user,
+                question=question,
+                answer_text=user_answer
+            )
+            
+            # Call Grading Service
+            try:
+                score = grade_answer(question.question_text, question.correct_answer, user_answer)
+                student_answer.llm_score = score
+            except Exception as e:
+                # Log error, keep score as None or 0
+                print(f"Grading failed: {e}")
+                student_answer.llm_score = 0
+            
+            student_answer.save()
+            messages.success(request, "Answer submitted and graded!")
+            return redirect('result-detail', answer_id=student_answer.id)
+
+    return render(request, 'core/attempt_question.html', {'question': question})
+
+@login_required
+def result_detail(request, answer_id):
+    """
+    Shows the result to the student.
+    Strictly NO correct answer shown.
+    """
+    answer = get_object_or_404(StudentAnswer, id=answer_id)
+    
+    # Security check: only the student who submitted or the teacher who created the question can view
+    is_owner = answer.student == request.user
+    is_teacher = answer.question.teacher == request.user
+    
+    if not (is_owner or is_teacher):
+        messages.error(request, "Access denied.")
+        return redirect('home')
+
+    return render(request, 'core/result_detail.html', {'answer': answer})

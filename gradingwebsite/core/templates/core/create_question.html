@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Set Questions</h1>
+    <p class="page-subtitle">Create a new assessment question for your students.</p>
+</div>
+
+<div class="card" style="max-width: 800px;">
+    <div class="card-body">
+        <form method="post" action="{% url 'create-question' %}">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label class="form-label" style="display: block; margin-bottom: 0.5rem; color: var(--text-main); font-weight: 500;">Question Text</label>
+                <textarea name="question_text" class="form-control" rows="4" placeholder="Enter the question here..." required style="width: 100%; padding: 0.75rem;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label class="form-label" style="display: block; margin-bottom: 0.5rem; color: var(--text-main); font-weight: 500;">Correct Answer</label>
+                <textarea name="correct_answer" class="form-control" rows="4" placeholder="Enter the correct answer/grading criteria..." required style="width: 100%; padding: 0.75rem;"></textarea>
+                <div style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.85rem;">
+                    <i class="bi bi-info-circle"></i> This will be used for AI grading and will NOT be shown to students.
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> Save Question
+                </button>
+                <a href="{% url 'teacher-dashboard' %}" class="btn btn-outline">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

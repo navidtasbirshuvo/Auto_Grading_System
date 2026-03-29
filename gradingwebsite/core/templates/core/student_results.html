@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 class="page-title">My Results</h1>
+        <p class="page-subtitle">Track your performance and view graded exams.</p>
+    </div>
+    <a href="{% url 'student-dashboard' %}" class="btn btn-outline">Back to Dashboard</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if answers %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Exam / Question</th>
+                        <th>Your Answer</th>
+                        <th>Score</th>
+                        <th>Submitted At</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ans in answers %}
+                    <tr>
+                        <td style="font-weight: 500;">{{ ans.question.question_text|truncatechars:60 }}</td>
+                        <td style="color: var(--text-muted);">{{ ans.answer_text|truncatechars:40 }}</td>
+                        <td>
+                            {% if ans.llm_score is not None %}
+                                <span class="badge badge-{% if ans.llm_score >= 5 %}success{% else %}danger{% endif %}">{{ ans.llm_score }}/10</span>
+                            {% else %}
+                                <span class="badge badge-primary">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--text-muted);">{{ ans.submitted_at|date:"M d, H:i" }}</td>
+                        <td>
+                            <a href="{% url 'result-detail' ans.id %}" class="btn btn-outline" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div style="text-align: center; padding: 3rem;">
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">You haven't taken any exams yet.</p>
+                <a href="{% url 'student-dashboard' %}" class="btn btn-primary">Browse Exams</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,126 +1,162 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from core.models import Exam, Subject, ExamEnrollment
-from authentication.models import StudentProfile, TeacherProfile
+from django.contrib import messages
+from core.models import Question, StudentAnswer
 
+
+# =========================
+# PUBLIC / HOME
+# =========================
 def index(request):
-    return render(request, 'index.html')
+    return render(request, "index.html")
 
+
+# =========================
+# DASHBOARDS
+# =========================
+@login_required
 def student_dashboard(request):
-    return render(request, 'student-dashboard.html')
+    answers = StudentAnswer.objects.filter(student=request.user)
+    return render(request, "student-dashboard.html", {
+        "answers": answers
+    })
 
+
+@login_required
 def teacher_dashboard(request):
-    return render(request, 'teacher-dashboard.html')
+    questions = Question.objects.filter(teacher=request.user)
+    return render(request, "teacher-dashboard.html", {
+        "questions": questions
+    })
 
-def student_results(request):
-    return render(request, 'student-results.html')
 
-def teacher_results(request):
-    return render(request, 'teacher-results.html')
-
+# =========================
+# TEACHER: SET QUESTION
+# =========================
 @login_required
 def set_question(request):
-    context = {}
+    if request.method == "POST":
+        question_text = request.POST.get("question")
+        correct_answer = request.POST.get("correct_answer")
 
-    if hasattr(request.user, 'teacherprofile'):
-        subjects = Subject.objects.filter(teacher=request.user.teacherprofile)
-        context['subjects'] = subjects
-        context['user_type'] = 'teacher'
-    else:
-        context['subjects'] = []
-        context['user_type'] = 'unknown'
+        if not question_text or not correct_answer:
+            messages.error(request, "All fields are required")
+        else:
+            Question.objects.create(
+                teacher=request.user,
+                question_text=question_text,
+                correct_answer=correct_answer
+            )
+            messages.success(request, "Question created successfully")
+            return redirect("set_question")
 
-    return render(request, 'set-question.html', context)
+    return render(request, "set-question.html")
 
+
+# =========================
+# STUDENT: EXAM (QUESTION LIST)
+# =========================
+@login_required
+def exam(request):
+    questions = Question.objects.filter(is_active=True)
+    return render(request, "exam.html", {
+        "questions": questions
+    })
+
+
+# =========================
+# STUDENT: ANSWER QUESTION
+# =========================
+@login_required
+def exam_detail(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+
+    # prevent duplicate submission
+    if StudentAnswer.objects.filter(student=request.user, question=question).exists():
+        messages.warning(request, "You already answered this question")
+        return redirect("exam")
+
+    if request.method == "POST":
+        answer_text = request.POST.get("answer")
+
+        if not answer_text:
+            messages.error(request, "Answer cannot be empty")
+        else:
+            StudentAnswer.objects.create(
+                student=request.user,
+                question=question,
+                answer_text=answer_text
+            )
+            messages.success(request, "Answer submitted successfully")
+            return redirect("exam")
+
+    return render(request, "exam-detail.html", {
+        "question": question
+    })
+
+
+# =========================
+# STUDENT: RESULTS
+# =========================
+@login_required
+def student_results(request):
+    answers = StudentAnswer.objects.filter(student=request.user)
+    return render(request, "student-results.html", {
+        "answers": answers
+    })
+
+
+# =========================
+# TEACHER: VIEW STUDENT ANSWERS
+# =========================
+@login_required
+def teacher_results(request):
+    answers = StudentAnswer.objects.select_related("student", "question")
+    return render(request, "teacher-results.html", {
+        "answers": answers
+    })
+
+
+# =========================
+# AUTH PAGES (STATIC)
+# =========================
 def student_login(request):
-    return render(request, 'student-login.html')
+    return render(request, "student-login.html")
+
 
 def student_register(request):
-    return render(request, 'student-register.html')
+    return render(request, "student-register.html")
 
-def student_profile(request):
-    return render(request, 'student-profile.html')
 
 def teacher_login(request):
-    return render(request, 'teacher-login.html')
+    return render(request, "teacher-login.html")
+
 
 def teacher_register(request):
-    return render(request, 'teacher-register.html')
+    return render(request, "teacher-register.html")
 
+
+# =========================
+# PROFILES (OPTIONAL)
+# =========================
+@login_required
+def student_profile(request):
+    return render(request, "student-profile.html")
+
+
+@login_required
 def teacher_profile(request):
-    return render(request, 'teacher-profile.html')
+    return render(request, "teacher-profile.html")
 
-def exam_detail(request):
-    return render(request, 'exam-detail.html')
 
+# =========================
+# SETTINGS / EXTRA
+# =========================
 @login_required
-def past_exams(request):
-    if hasattr(request.user, 'studentprofile'):
-        enrollments = ExamEnrollment.objects.filter(
-            student=request.user.studentprofile,
-            is_active=True
-        )
-        past_exams = [enrollment.exam for enrollment in enrollments if enrollment.exam.is_past]
-        context = {
-            'exams': past_exams,
-            'user_type': 'student'
-        }
-    else:
-        context = {'exams': [], 'user_type': 'unknown'}
-
-    return render(request, 'past-exams.html', context)
-
-@login_required
-def current_exams(request):
-    if hasattr(request.user, 'studentprofile'):
-        enrollments = ExamEnrollment.objects.filter(
-            student=request.user.studentprofile,
-            is_active=True,
-            exam__status='active'
-        )
-        current_exams = [enrollment.exam for enrollment in enrollments if enrollment.exam.is_active]
-        context = {
-            'exams': current_exams,
-            'user_type': 'student'
-        }
-    else:
-        context = {'exams': [], 'user_type': 'unknown'}
-
-    return render(request, 'current-exams.html', context)
-
-@login_required
-def upcoming_exams(request):
-    if hasattr(request.user, 'studentprofile'):
-        enrollments = ExamEnrollment.objects.filter(
-            student=request.user.studentprofile,
-            is_active=True,
-            exam__status__in=['scheduled', 'active']
-        )
-        upcoming_exams = [enrollment.exam for enrollment in enrollments if enrollment.exam.is_upcoming]
-        context = {
-            'exams': upcoming_exams,
-            'user_type': 'student'
-        }
-    else:
-        context = {'exams': [], 'user_type': 'unknown'}
-
-    return render(request, 'upcoming-exams.html', context)
-
-@login_required
-def manage_exams(request):
-    if hasattr(request.user, 'teacherprofile'):
-        exams = Exam.objects.filter(teacher=request.user.teacherprofile).order_by('-created_at')
-        context = {
-            'exams': exams,
-            'user_type': 'teacher'
-        }
-    else:
-        context = {'exams': [], 'user_type': 'unknown'}
-
-    return render(request, 'manage-exams.html', context)
-
 def teacher_students(request):
-    return render(request, 'teacher-students.html')
+    return render(request, "teacher-students.html")
 
+
+@login_required
 def teacher_settings(request):
-    return render(request, 'teacher-settings.html')
+    return render(request, "teacher-settings.html")

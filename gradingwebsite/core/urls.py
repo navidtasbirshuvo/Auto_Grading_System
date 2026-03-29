@@ -2,16 +2,21 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('exams/', views.exam_list, name='exam-list'),
-    path('exams/create/', views.create_exam, name='create-exam'),
-    path('exams/<int:exam_id>/', views.exam_detail, name='exam-detail'),
-    path('exams/<int:exam_id>/start/', views.start_exam, name='start-exam'),
-    path('exams/<int:exam_id>/submit/', views.submit_exam, name='submit-exam'),
-    path('exams/<int:exam_id>/enroll/', views.enroll_students, name='enroll-students'),
-    path('exams/<int:exam_id>/questions/', views.question_list, name='question-list'),
-    path('questions/<int:question_id>/', views.question_detail, name='question-detail'),
-    path('results/', views.results_list, name='results-list'),
-    path('results/<int:attempt_id>/', views.result_detail, name='result-detail'),
-    path('api/exams/', views.api_exam_list, name='api-exam-list'),
-    path('api/subjects/', views.api_subject_list, name='api-subject-list'),
+    # Teacher URLs
+    path('teacher/dashboard/', views.teacher_dashboard, name='teacher-dashboard'),
+    path('profile/', views.profile_view, name='profile'),
+    path('teacher/create-question/', views.create_question, name='create-question'),
+    path('teacher/results/', views.teacher_results, name='teacher-results'),
+    path('teacher/result/delete/<int:answer_id>/', views.delete_result, name='delete-result'),
+
+    # Student URLs
+    path('student/dashboard/', views.student_dashboard, name='student-dashboard'),
+    path('student/exams/', views.student_exams, name='student-exams'),
+    path('student/results/', views.student_results, name='student-results'),
+    path('student/attempt/<int:question_id>/', views.attempt_question, name='attempt-question'),
+    
+    # Result
+    path('result/<int:answer_id>/', views.result_detail, name='result-detail'),
+    
+    # API / Compatibility (if needed, but mostly we use the views above)
 ]

@@ -103,3 +103,11 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# GRADING API CONFIGURATION
+# -------------------------
+
+LLM_API_URL = "http://34.237.80.239:8000/grade-answer"
+
+
+

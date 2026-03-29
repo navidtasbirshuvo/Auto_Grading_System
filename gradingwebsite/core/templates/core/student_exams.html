@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 class="page-title">Available Exams</h1>
+        <p class="page-subtitle">Select an exam to attempt.</p>
+    </div>
+    <a href="{% url 'student-dashboard' %}" class="btn btn-outline">Back to Dashboard</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if questions %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Exam / Question</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for q in questions %}
+                    <tr>
+                        <td>{{ q.text|truncatechars:80 }}</td>
+                        <td>
+                            {% if q.is_answered %}
+                                <span class="badge badge-success">Completed</span>
+                            {% else %}
+                                <span class="badge badge-primary">New</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if q.is_answered %}
+                                <a href="{% url 'result-detail' q.answer_id %}" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">View Result</a>
+                            {% else %}
+                                <a href="{% url 'attempt-question' q.id %}" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Start Attempt</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div style="text-align: center; padding: 3rem;">
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">No exams available right now.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
